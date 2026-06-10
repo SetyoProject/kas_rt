@@ -1,4 +1,5 @@
 const express = require('express');
+const db = require('./config/db');
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use('/tagihan', require('./routes/tagihan'));
 app.use('/pembayaran', require('./routes/pembayaran'));
 app.use('/laporan', require('./routes/laporan'));
 
+app.get('/', (req, res) => {
+    res.send('Kas RT API Berjalan');
+});
 app.listen(3000, () => {
     console.log('Server berjalan di port 3000');
 });

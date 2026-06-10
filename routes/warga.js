@@ -1,34 +1,53 @@
 const express = require('express');
 const router = express.Router();
 
-const { warga, getNextId } = require('../data/dataWarga');
-
+const db = require('../config/db')
 // GET semua warga
 router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        total: warga.length,
-        data: warga
-    });
+    db.query(
+        'SELECT * FROM warga',
+        (err, result) => {
+            if (err) {
+                return res.status(500).json(err);
+            }
+            res.json({
+                success: true,
+                total: result.length,
+                data: result
+            });
+        }
+    );
 });
 
 // GET warga berdasarkan id
 router.get('/:id', (req, res) => {
-    const id = parseInt(req.params.id);
 
-    const dataWarga = warga.find(w => w.id === id);
+    const id = req.params.id;
 
-    if (!dataWarga) {
-        return res.status(404).json({
-            success: false,
-            pesan: 'Warga tidak ditemukan'
-        });
-    }
+    db.query(
+        'SELECT * FROM warga WHERE id_warga = ?',
+        [id],
+        (err, result) => {
 
-    res.json({
-        success: true,
-        data: dataWarga
-    });
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            if (result.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    pesan: 'Warga tidak ditemukan'
+                });
+            }
+
+            res.json({
+                success: true,
+                data: result[0]
+            });
+
+        }
+    );
+
 });
 
 // POST tambah warga
@@ -36,77 +55,75 @@ router.post('/', (req, res) => {
 
     const { nama, alamat, no_hp } = req.body;
 
-    if (!nama || !alamat || !no_hp) {
-        return res.status(400).json({
-            success: false,
-            pesan: 'Nama, alamat dan nomor HP wajib diisi'
-        });
-    }
+    db.query(
+        'INSERT INTO warga(nama,alamat,no_hp) VALUES(?,?,?)',
+        [nama, alamat, no_hp],
+        (err, result) => {
 
-    const wargaBaru = {
-        id: getNextId(),
-        nama,
-        alamat,
-        no_hp
-    };
+            if (err) {
+                return res.status(500).json(err);
+            }
 
-    warga.push(wargaBaru);
+            res.status(201).json({
+                success: true,
+                pesan: 'Warga berhasil ditambahkan'
+            });
 
-    res.status(201).json({
-        success: true,
-        pesan: 'Warga berhasil ditambahkan',
-        data: wargaBaru
-    });
+        }
+    );
+
 });
 
 // PUT update warga
 router.put('/:id', (req, res) => {
 
-    const id = parseInt(req.params.id);
-
-    const idx = warga.findIndex(w => w.id === id);
-
-    if (idx === -1) {
-        return res.status(404).json({
-            success: false,
-            pesan: 'Warga tidak ditemukan'
-        });
-    }
+    const id = req.params.id;
 
     const { nama, alamat, no_hp } = req.body;
 
-    if (nama) warga[idx].nama = nama;
-    if (alamat) warga[idx].alamat = alamat;
-    if (no_hp) warga[idx].no_hp = no_hp;
+    db.query(
+        `UPDATE warga
+         SET nama = ?, alamat = ?, no_hp = ?
+         WHERE id_warga = ?`,
+        [nama, alamat, no_hp, id],
+        (err, result) => {
 
-    res.json({
-        success: true,
-        pesan: 'Data warga berhasil diupdate',
-        data: warga[idx]
-    });
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                success: true,
+                pesan: 'Data warga berhasil diupdate'
+            });
+
+        }
+    );
+
 });
 
 // DELETE warga
 router.delete('/:id', (req, res) => {
 
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
 
-    const idx = warga.findIndex(w => w.id === id);
+    db.query(
+        'DELETE FROM warga WHERE id_warga = ?',
+        [id],
+        (err, result) => {
 
-    if (idx === -1) {
-        return res.status(404).json({
-            success: false,
-            pesan: 'Warga tidak ditemukan'
-        });
-    }
+            if (err) {
+                return res.status(500).json(err);
+            }
 
-    const dihapus = warga.splice(idx, 1);
+            res.json({
+                success: true,
+                pesan: 'Data warga berhasil dihapus'
+            });
 
-    res.json({
-        success: true,
-        pesan: 'Data warga berhasil dihapus',
-        data: dihapus[0]
-    });
+        }
+    );
+
 });
 
 module.exports = router;

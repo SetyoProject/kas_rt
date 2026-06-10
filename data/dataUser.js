@@ -13,13 +13,4 @@ const users = [
     }
 ];
 
-const getNextUserId = () => {
-    return users.length > 0
-        ? Math.max(...users.map(u => u.id)) + 1
-        : 1;
-};
-
-module.exports = {
-    users,
-    getNextUserId
-};
+module.exports = { users };
