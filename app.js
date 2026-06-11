@@ -1,9 +1,43 @@
 const express = require('express');
-const db = require('./config/db');
+const session = require('express-session');
+const path = require('path');
 
 const app = express();
 
+// koneksi database
+require('./config/db');
+
+// ========================
+// MIDDLEWARE
+// ========================
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(
+    session({
+        secret: 'kas_rt_secret_key',
+        resave: false,
+        saveUninitialized: false
+    })
+);
+
+// ========================
+// EJS
+// ========================
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// ========================
+// STATIC FILE
+// ========================
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ========================
+// ROUTES
+// ========================
 
 app.use('/auth', require('./routes/auth'));
 app.use('/dashboard', require('./routes/dashboard'));
@@ -12,9 +46,28 @@ app.use('/tagihan', require('./routes/tagihan'));
 app.use('/pembayaran', require('./routes/pembayaran'));
 app.use('/laporan', require('./routes/laporan'));
 
+// ========================
+// HOME
+// ========================
+
 app.get('/', (req, res) => {
-    res.send('Kas RT API Berjalan');
+    res.redirect('/auth/login');
 });
-app.listen(3000, () => {
-    console.log('Server berjalan di port 3000');
+
+// ========================
+// 404
+// ========================
+
+app.use((req, res) => {
+    res.status(404).send('404 - Halaman Tidak Ditemukan');
+});
+
+// ========================
+// SERVER
+// ========================
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
 });

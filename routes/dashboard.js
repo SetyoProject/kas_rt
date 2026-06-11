@@ -1,42 +1,66 @@
 const express = require('express');
 const router = express.Router();
 
-const { warga } = require('../data/dataWarga');
-const { tagihan } = require('../data/dataTagihan');
-const { pembayaran } = require('../data/dataPembayaran');
+const db = require('../config/db');
+const { isLogin } = require('../middleware/authMiddleware');
 
-router.get('/', (req, res) => {
+router.get('/', isLogin, (req, res) => {
 
-    const totalWarga = warga.length;
+    const dashboardData = {};
 
-    const totalTagihan = tagihan.length;
+    db.query(
+        'SELECT COUNT(*) AS total_warga FROM warga',
+        (err, result) => {
 
-    const tagihanLunas = tagihan.filter(
-        t => t.status === 'Lunas'
-    ).length;
+            dashboardData.total_warga = result[0].total_warga;
 
-    const tagihanBelumLunas = tagihan.filter(
-        t => t.status === 'Belum Lunas'
-    ).length;
+            db.query(
+                'SELECT COUNT(*) AS total_tagihan FROM tagihan',
+                (err, result2) => {
 
-    const totalPemasukan = pembayaran.reduce(
-        (total, item) => total + item.jumlah_bayar,
-        0
-    );
+                    dashboardData.total_tagihan = result2[0].total_tagihan;
 
-    const totalPembayaran = pembayaran.length;
+                    db.query(
+                        "SELECT COUNT(*) AS lunas FROM tagihan WHERE status='Lunas'",
+                        (err, result3) => {
 
-    res.json({
-        success: true,
-        data: {
-            total_warga: totalWarga,
-            total_tagihan: totalTagihan,
-            tagihan_lunas: tagihanLunas,
-            tagihan_belum_lunas: tagihanBelumLunas,
-            total_pembayaran: totalPembayaran,
-            total_pemasukan: totalPemasukan
+                            dashboardData.lunas = result3[0].lunas;
+
+                            db.query(
+                                "SELECT COUNT(*) AS belum_lunas FROM tagihan WHERE status='Belum Lunas'",
+                                (err, result4) => {
+
+                                    dashboardData.belum_lunas = result4[0].belum_lunas;
+
+                                    db.query(
+                                        'SELECT SUM(jumlah_bayar) AS total_kas FROM pembayaran',
+                                        (err, result5) => {
+
+                                            dashboardData.total_kas =
+                                                result5[0].total_kas || 0;
+
+                                            res.render(
+                                                'dashboard',
+                                                {
+                                                    user: req.session.user,
+                                                    dashboard: dashboardData
+                                                }
+                                            );
+
+                                        }
+                                    );
+
+                                }
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
         }
-    });
+    );
 
 });
 

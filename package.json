@@ -1,7 +1,7 @@
 {
   "name": "kas_lingkungan",
   "version": "1.0.0",
-  "description": "",
+  "description": "��#\u0000 \u0000k\u0000a\u0000s\u0000_\u0000r\u0000t\u0000\r\u0000 \u0000",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,25 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "ejs": "^6.0.1",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "mysql2": "^3.22.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SetyoProject/kas_rt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SetyoProject/kas_rt/issues"
+  },
+  "homepage": "https://github.com/SetyoProject/kas_rt#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   }
 }

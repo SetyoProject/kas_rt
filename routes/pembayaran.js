@@ -1,20 +1,66 @@
 const express = require('express');
 const router = express.Router();
 
-const { pembayaran, getNextPembayaranId } = require('../data/dataPembayaran');
+const db = require('../config/db');
+const { isLogin } = require('../middleware/authMiddleware');
 
-// semua pembayaran
-router.get('/', (req, res) => {
+// daftar pembayaran
+router.get('/', isLogin, (req, res) => {
 
-    res.json({
-        success: true,
-        data: pembayaran
+    const sql = `
+        SELECT
+            p.*,
+            w.nama,
+            t.bulan,
+            t.tahun
+        FROM pembayaran p
+        JOIN tagihan t
+            ON p.id_tagihan = t.id_tagihan
+        JOIN warga w
+            ON t.id_warga = w.id_warga
+        ORDER BY p.id_pembayaran DESC
+    `;
+
+    db.query(sql, (err, result) => {
+
+        if (err) return res.send(err);
+
+        res.render('pembayaran/index', {
+            pembayaran: result,
+            user: req.session.user
+        });
+
     });
 
 });
 
-// tambah pembayaran
-router.post('/', (req, res) => {
+// form pembayaran
+router.get('/tambah', isLogin, (req, res) => {
+
+    const sql = `
+        SELECT
+            t.*,
+            w.nama
+        FROM tagihan t
+        JOIN warga w
+            ON t.id_warga = w.id_warga
+        WHERE t.status = 'Belum Lunas'
+    `;
+
+    db.query(sql, (err, result) => {
+
+        if (err) return res.send(err);
+
+        res.render('pembayaran/tambah', {
+            tagihan: result
+        });
+
+    });
+
+});
+
+// simpan pembayaran
+router.post('/simpan', isLogin, (req, res) => {
 
     const {
         id_tagihan,
@@ -22,19 +68,44 @@ router.post('/', (req, res) => {
         jumlah_bayar
     } = req.body;
 
-    const pembayaranBaru = {
-        id: getNextPembayaranId(),
-        id_tagihan,
-        tanggal_bayar,
-        jumlah_bayar
-    };
+    db.query(
+        `
+        INSERT INTO pembayaran
+        (
+            id_tagihan,
+            tanggal_bayar,
+            jumlah_bayar
+        )
+        VALUES
+        (?,?,?)
+        `,
+        [
+            id_tagihan,
+            tanggal_bayar,
+            jumlah_bayar
+        ],
+        (err) => {
 
-    pembayaran.push(pembayaranBaru);
+            if (err) return res.send(err);
 
-    res.status(201).json({
-        success: true,
-        pesan: 'Pembayaran berhasil'
-    });
+            db.query(
+                `
+                UPDATE tagihan
+                SET status='Lunas'
+                WHERE id_tagihan=?
+                `,
+                [id_tagihan],
+                (err2) => {
+
+                    if (err2) return res.send(err2);
+
+                    res.redirect('/pembayaran');
+
+                }
+            );
+
+        }
+    );
 
 });
 

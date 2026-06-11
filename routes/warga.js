@@ -1,48 +1,23 @@
 const express = require('express');
 const router = express.Router();
 
-const db = require('../config/db')
-// GET semua warga
-router.get('/', (req, res) => {
-    db.query(
-        'SELECT * FROM warga',
-        (err, result) => {
-            if (err) {
-                return res.status(500).json(err);
-            }
-            res.json({
-                success: true,
-                total: result.length,
-                data: result
-            });
-        }
-    );
-});
+const db = require('../config/db');
+const { isLogin } = require('../middleware/authMiddleware');
 
-// GET warga berdasarkan id
-router.get('/:id', (req, res) => {
-
-    const id = req.params.id;
+// tampil semua warga
+router.get('/', isLogin, (req, res) => {
 
     db.query(
-        'SELECT * FROM warga WHERE id_warga = ?',
-        [id],
+        'SELECT * FROM warga ORDER BY id_warga DESC',
         (err, result) => {
 
             if (err) {
-                return res.status(500).json(err);
+                return res.send(err);
             }
 
-            if (result.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    pesan: 'Warga tidak ditemukan'
-                });
-            }
-
-            res.json({
-                success: true,
-                data: result[0]
+            res.render('warga/index', {
+                user: req.session.user,
+                warga: result
             });
 
         }
@@ -50,23 +25,50 @@ router.get('/:id', (req, res) => {
 
 });
 
-// POST tambah warga
-router.post('/', (req, res) => {
+// form tambah
+router.get('/tambah', isLogin, (req, res) => {
+
+    res.render('warga/tambah');
+
+});
+
+// simpan
+router.post('/simpan', isLogin, (req, res) => {
 
     const { nama, alamat, no_hp } = req.body;
 
     db.query(
         'INSERT INTO warga(nama,alamat,no_hp) VALUES(?,?,?)',
         [nama, alamat, no_hp],
+        (err) => {
+
+            if (err) {
+                return res.send(err);
+            }
+
+            res.redirect('/warga');
+
+        }
+    );
+
+});
+
+// form edit
+router.get('/edit/:id', isLogin, (req, res) => {
+
+    const id = req.params.id;
+
+    db.query(
+        'SELECT * FROM warga WHERE id_warga=?',
+        [id],
         (err, result) => {
 
             if (err) {
-                return res.status(500).json(err);
+                return res.send(err);
             }
 
-            res.status(201).json({
-                success: true,
-                pesan: 'Warga berhasil ditambahkan'
+            res.render('warga/edit', {
+                warga: result[0]
             });
 
         }
@@ -74,52 +76,44 @@ router.post('/', (req, res) => {
 
 });
 
-// PUT update warga
-router.put('/:id', (req, res) => {
+// update
+router.post('/update/:id', isLogin, (req, res) => {
 
     const id = req.params.id;
 
     const { nama, alamat, no_hp } = req.body;
 
     db.query(
-        `UPDATE warga
-         SET nama = ?, alamat = ?, no_hp = ?
-         WHERE id_warga = ?`,
+        'UPDATE warga SET nama=?, alamat=?, no_hp=? WHERE id_warga=?',
         [nama, alamat, no_hp, id],
-        (err, result) => {
+        (err) => {
 
             if (err) {
-                return res.status(500).json(err);
+                return res.send(err);
             }
 
-            res.json({
-                success: true,
-                pesan: 'Data warga berhasil diupdate'
-            });
+            res.redirect('/warga');
 
         }
     );
 
 });
 
-// DELETE warga
-router.delete('/:id', (req, res) => {
+// hapus
+router.get('/hapus/:id', isLogin, (req, res) => {
 
     const id = req.params.id;
 
     db.query(
-        'DELETE FROM warga WHERE id_warga = ?',
+        'DELETE FROM warga WHERE id_warga=?',
         [id],
-        (err, result) => {
+        (err) => {
 
             if (err) {
-                return res.status(500).json(err);
+                return res.send(err);
             }
 
-            res.json({
-                success: true,
-                pesan: 'Data warga berhasil dihapus'
-            });
+            res.redirect('/warga');
 
         }
     );
