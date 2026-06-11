@@ -32,9 +32,10 @@
                 <th>Bulan</th>
                 <th>Tahun</th>
                 <th>Tagihan</th>
+                <th>Total Bayar</th>
+                <th>Sisa</th>
                 <th>Status</th>
                 <th>Aksi</th>
-
             </tr>
 
         </thead>
@@ -56,6 +57,13 @@
                 <td>
                     Rp <%= Number(item.jumlah_tagihan).toLocaleString('id-ID') %>
                 </td>
+                <td>
+                    Rp <%= Number(item.total_bayar).toLocaleString('id-ID') %>
+                </td>
+                <td>
+                    Rp <%= Number(item.jumlah_tagihan - item.total_bayar).toLocaleString('id-ID') %>
+                </td>
+
 
                 <td>
 
