@@ -2,7 +2,7 @@
 -- DATABASE KAS RT
 -- =====================================
 
-/*CREATE DATABASE IF NOT EXISTS kas_rt;
+CREATE DATABASE IF NOT EXISTS kas_rt;
 USE kas_rt;
 
 -- =====================================
@@ -150,7 +150,7 @@ JOIN warga w
 -- =====================================
 -- VIEW WARGA BELUM LUNAS
 -- =====================================
-*/
+
 CREATE VIEW v_warga_belum_lunas AS
 SELECT
     w.id_warga,
