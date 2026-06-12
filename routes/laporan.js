@@ -1,38 +1,39 @@
 const express = require('express');
 const router = express.Router();
 
-const { warga } = require('../data/dataWarga');
-const { tagihan } = require('../data/dataTagihan');
-const { pembayaran } = require('../data/dataPembayaran');
+const db = require('../config/db');
+const { isLogin } = require('../middleware/authMiddleware');
 
-router.get('/', (req, res) => {
+// Semua pembayaran
 
-    const totalWarga = warga.length;
+router.get('/', isLogin, (req, res) => {
 
-    const totalPemasukan = pembayaran.reduce(
-        (total, item) => total + item.jumlah_bayar,
-        0
-    );
+    const sql = `
+        SELECT
+            p.*,
+            w.nama,
+            t.bulan,
+            t.tahun,
+            u.username
+        FROM pembayaran p
+        JOIN tagihan t
+            ON p.id_tagihan = t.id_tagihan
+        JOIN warga w
+            ON t.id_warga = w.id_warga
+        JOIN users u
+            ON p.id_user = u.id_user
+        ORDER BY p.tanggal_bayar DESC
+    `;
 
-    const totalPembayaran = pembayaran.length;
+    db.query(sql, (err, result) => {
 
-    const lunas = tagihan.filter(
-        t => t.status === 'Lunas'
-    ).length;
+        if (err) return res.send(err);
 
-    const belumLunas = tagihan.filter(
-        t => t.status === 'Belum Lunas'
-    ).length;
+        res.render('laporan/index', {
+            laporan: result,
+            user: req.session.user
+        });
 
-    res.json({
-        success: true,
-        laporan: {
-            total_warga: totalWarga,
-            total_pembayaran: totalPembayaran,
-            total_pemasukan: totalPemasukan,
-            tagihan_lunas: lunas,
-            tagihan_belum_lunas: belumLunas
-        }
     });
 
 });
@@ -47,30 +48,51 @@ router.get('/pembayaran', (req, res) => {
 
 });
 
-router.get('/belum-lunas', (req, res) => {
+//belum lunas
+router.get('/belum-lunas', isLogin, (req, res) => {
 
-    const data = tagihan.filter(
-        t => t.status === 'Belum Lunas'
-    );
+    const sql = `
+        SELECT
+            t.*,
+            w.nama
+        FROM tagihan t
+        JOIN warga w
+            ON t.id_warga = w.id_warga
+        WHERE status='Belum Lunas'
+        ORDER BY w.nama
+    `;
 
-    res.json({
-        success: true,
-        total: data.length,
-        data
+    db.query(sql, (err, result) => {
+
+        if (err) return res.send(err);
+
+        res.render('laporan/belum_lunas', {
+            data: result
+        });
+
     });
 
 });
+  
 
-router.get('/pemasukan', (req, res) => {
+//pemasukan
+router.get('/pemasukan', isLogin, (req, res) => {
 
-    const total = pembayaran.reduce(
-        (sum, item) => sum + item.jumlah_bayar,
-        0
-    );
+    const sql = `
+        SELECT
+            COALESCE(SUM(jumlah_bayar),0)
+            AS total_pemasukan
+        FROM pembayaran
+    `;
 
-    res.json({
-        success: true,
-        total_pemasukan: total
+    db.query(sql, (err, result) => {
+
+        if (err) return res.send(err);
+
+        res.render('laporan/pemasukan', {
+            total: result[0]
+        });
+
     });
 
 });

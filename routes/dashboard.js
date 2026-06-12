@@ -33,22 +33,33 @@ router.get('/', isLogin, (req, res) => {
                                     dashboardData.belum_lunas = result4[0].belum_lunas;
 
                                     db.query(
-                                        'SELECT SUM(jumlah_bayar) AS total_kas FROM pembayaran',
-                                        (err, result5) => {
+    `
+    SELECT
+        (SELECT COALESCE(SUM(jumlah_bayar),0)
+        FROM pembayaran) AS total_kas_masuk,
 
-                                            dashboardData.total_kas =
-                                                result5[0].total_kas || 0;
+        (SELECT COALESCE(SUM(jumlah),0)
+        FROM pengeluaran) AS total_kas_keluar
+    `,
+    (err, result5) => {
 
-                                            res.render(
-                                                'dashboard',
-                                                {
-                                                    user: req.session.user,
-                                                    dashboard: dashboardData
-                                                }
-                                            );
+        if (err) return res.send(err);
 
-                                        }
-                                    );
+        dashboardData.total_kas_masuk = result5[0].total_kas_masuk || 0;
+
+        dashboardData.total_kas_keluar = result5[0].total_kas_keluar || 0;
+
+        dashboardData.total_kas =
+            dashboardData.total_kas_masuk -
+            dashboardData.total_kas_keluar;
+
+        res.render('dashboard', {
+            dashboard: dashboardData,
+            user: req.session.user
+        });
+
+    }
+);
 
                                 }
                             );

@@ -44,6 +44,7 @@ app.use('/dashboard', require('./routes/dashboard'));
 app.use('/warga', require('./routes/warga'));
 app.use('/tagihan', require('./routes/tagihan'));
 app.use('/pembayaran', require('./routes/pembayaran'));
+app.use('/pengeluaran', require('./routes/pengeluaran'));
 app.use('/laporan', require('./routes/laporan'));
 
 // ========================
