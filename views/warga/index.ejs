@@ -36,7 +36,7 @@
         <thead>
 
             <tr>
-                <th>ID</th>
+                <th>No</th>
                 <th>Nama</th>
                 <th>Alamat</th>
                 <th>No HP</th>
@@ -47,11 +47,11 @@
 
         <tbody>
 
-            <% warga.forEach(item => { %>
+            <% warga.forEach((item, index) => { %>
 
                 <tr>
 
-                    <td><%= item.id_warga %></td>
+                    <td><%= index + 1 %></td>
                     <td><%= item.nama %></td>
                     <td><%= item.alamat %></td>
                     <td><%= item.no_hp %></td>

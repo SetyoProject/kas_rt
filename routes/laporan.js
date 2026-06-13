@@ -8,94 +8,105 @@ const { isLogin } = require('../middleware/authMiddleware');
 
 router.get('/', isLogin, (req, res) => {
 
-    const sql = `
+    const tanggal_awal = req.query.tanggal_awal || '2020-01-01';
+    const tanggal_akhir = req.query.tanggal_akhir || '2030-12-31';
+
+    // total kas masuk
+    db.query(
+        `
         SELECT
-            p.*,
-            w.nama,
-            t.bulan,
-            t.tahun,
-            u.username
-        FROM pembayaran p
-        JOIN tagihan t
-            ON p.id_tagihan = t.id_tagihan
-        JOIN warga w
-            ON t.id_warga = w.id_warga
-        JOIN users u
-            ON p.id_user = u.id_user
-        ORDER BY p.tanggal_bayar DESC
-    `;
-
-    db.query(sql, (err, result) => {
-
-        if (err) return res.send(err);
-
-        res.render('laporan/index', {
-            laporan: result,
-            user: req.session.user
-        });
-
-    });
-
-});
-
-router.get('/pembayaran', (req, res) => {
-
-    res.json({
-        success: true,
-        total: pembayaran.length,
-        data: pembayaran
-    });
-
-});
-
-//belum lunas
-router.get('/belum-lunas', isLogin, (req, res) => {
-
-    const sql = `
-        SELECT
-            t.*,
-            w.nama
-        FROM tagihan t
-        JOIN warga w
-            ON t.id_warga = w.id_warga
-        WHERE status='Belum Lunas'
-        ORDER BY w.nama
-    `;
-
-    db.query(sql, (err, result) => {
-
-        if (err) return res.send(err);
-
-        res.render('laporan/belum_lunas', {
-            data: result
-        });
-
-    });
-
-});
-  
-
-//pemasukan
-router.get('/pemasukan', isLogin, (req, res) => {
-
-    const sql = `
-        SELECT
-            COALESCE(SUM(jumlah_bayar),0)
-            AS total_pemasukan
+            COALESCE(SUM(jumlah_bayar),0) AS total_kas_masuk
         FROM pembayaran
-    `;
+        WHERE tanggal_bayar BETWEEN ? AND ?
+        `,
+        [tanggal_awal, tanggal_akhir],
 
-    db.query(sql, (err, result) => {
+        (err, resultMasuk) => {
 
-        if (err) return res.send(err);
+            if (err) return res.send(err);
 
-        res.render('laporan/pemasukan', {
-            total: result[0]
-        });
+            // total kas keluar
+            db.query(
+                `
+                SELECT
+                    COALESCE(SUM(jumlah),0) AS total_kas_keluar
+                FROM pengeluaran
+                WHERE tanggal BETWEEN ? AND ?
+                `,
+                [tanggal_awal, tanggal_akhir],
 
-    });
+                (err, resultKeluar) => {
+
+                    if (err) return res.send(err);
+
+                    const total_kas_masuk =
+                        resultMasuk[0].total_kas_masuk || 0;
+
+                    const total_kas_keluar =
+                        resultKeluar[0].total_kas_keluar || 0;
+
+                    const saldo_kas =
+                        total_kas_masuk - total_kas_keluar;
+
+                    // transaksi gabungan
+                    const sql = `
+                        SELECT
+                            p.tanggal_bayar AS tanggal,
+                            'Pemasukan' AS jenis,
+                            CONCAT('Pembayaran ', w.nama) AS keterangan,
+                            p.jumlah_bayar AS nominal
+                        FROM pembayaran p
+                        JOIN tagihan t
+                            ON p.id_tagihan = t.id_tagihan
+                        JOIN warga w
+                            ON t.id_warga = w.id_warga
+                        WHERE p.tanggal_bayar BETWEEN ? AND ?
+
+                        UNION ALL
+
+                        SELECT
+                            tanggal,
+                            'Pengeluaran',
+                            keterangan,
+                            jumlah
+                        FROM pengeluaran
+                        WHERE tanggal BETWEEN ? AND ?
+
+                        ORDER BY tanggal ASC
+                    `;
+
+                    db.query(
+                        sql,
+                        [
+                            tanggal_awal,
+                            tanggal_akhir,
+                            tanggal_awal,
+                            tanggal_akhir
+                        ],
+
+                        (err, transaksi) => {
+
+                            if (err) return res.send(err);
+
+                            res.render('laporan/index', {
+                                transaksi,
+                                total_kas_masuk,
+                                total_kas_keluar,
+                                saldo_kas,
+                                tanggal_awal,
+                                tanggal_akhir,
+                                user: req.session.user
+                            });
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
 
 });
-
 
 module.exports = router;
