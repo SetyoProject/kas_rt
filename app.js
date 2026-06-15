@@ -29,15 +29,13 @@ app.use(
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// ========================
 // STATIC FILE
-// ========================
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ========================
+
 // ROUTES
-// ========================
 
 app.use('/auth', require('./routes/auth'));
 app.use('/dashboard', require('./routes/dashboard'));

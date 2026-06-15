@@ -5,6 +5,7 @@ const db = require('../config/db');
 const { isLogin } = require('../middleware/authMiddleware');
 
 router.get('/', isLogin, (req, res) => {
+    title = 'Dashboard';
 
     const dashboardData = {};
 

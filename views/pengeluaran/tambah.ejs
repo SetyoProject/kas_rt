@@ -1,102 +1,78 @@
-<!DOCTYPE html>
-<html>
-<head>
 
-    <title>Tambah Pengeluaran</title>
+<%- include('../layout/navbar') %>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+<%- include('../layout/sidebar') %>
 
-</head>
-<body>
+    <section class="content">
+        <div class="container-fluid mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Tambah Pengeluaran
+                    </h3>
+                </div>
 
-<div class="container mt-4">
+                <form action="/pengeluaran/simpan" method="POST">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Tanggal
+                            </label>
+                            <input
+                                type="date"
+                                name="tanggal"
+                                class="form-control"
+                                required>
+                        </div>
 
-    <div class="card shadow">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Keterangan
+                            </label>
 
-        <div class="card-header bg-primary text-white">
+                            <textarea
+                                name="keterangan"
+                                class="form-control"
+                                rows="3"
+                                required></textarea>
 
-            <h4>Tambah Pengeluaran</h4>
+                        </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Jumlah Pengeluaran
+                            </label>
+
+                            <input
+                                type="number"
+                                name="jumlah"
+                                class="form-control"
+                                placeholder="Masukkan jumlah pengeluaran"
+                                required>
+
+                        </div>
+
+                    </div>
+                    <div class="card-footer">
+                        <button
+                            type="submit"
+                            class="btn btn-success">
+
+                            <i class="fas fa-save"></i>
+                            Simpan
+                        </button>
+
+                        <a
+                            href="/pengeluaran"
+                            class="btn btn-secondary">
+
+                            <i class="fas fa-arrow-left"></i>
+                            Kembali
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
+    </section>
 
-        <div class="card-body">
-
-            <form action="/pengeluaran/simpan" method="POST">
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
-                        Tanggal
-
-                    </label>
-
-                    <input
-                        type="date"
-                        name="tanggal"
-                        class="form-control"
-                        required>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
-                        Keterangan
-
-                    </label>
-
-                    <textarea
-                        name="keterangan"
-                        class="form-control"
-                        rows="3"
-                        required></textarea>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-
-                        Jumlah Pengeluaran
-
-                    </label>
-
-                    <input
-                        type="number"
-                        name="jumlah"
-                        class="form-control"
-                        placeholder="Masukkan jumlah pengeluaran"
-                        required>
-
-                </div>
-
-                <button
-                    type="submit"
-                    class="btn btn-success">
-
-                    Simpan
-
-                </button>
-
-                <a
-                    href="/pengeluaran"
-                    class="btn btn-secondary">
-
-                    Kembali
-
-                </a>
-
-            </form>
-
-        </div>
-
-    </div>
-
-</div>
-
-</body>
-</html>
+<%- include('../layout/footer') %>
