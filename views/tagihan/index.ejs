@@ -1,110 +1,173 @@
-<!DOCTYPE html>
-<html>
-<head>
+<%- include('../layout/navbar') %>
 
-    <title>Tagihan</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-</head>
-<body>
-
-<div class="container mt-4">
-
-    <h2>Data Tagihan</h2>
-
-    <a href="/dashboard" class="btn btn-secondary mb-3">
-        Dashboard
-    </a>
-
-    <a href="/tagihan/tambah" class="btn btn-primary mb-3">
-        Tambah Tagihan
-    </a>
-
-    <table class="table table-bordered">
-
-        <thead>
-
-            <tr>
-
-                <th>ID</th>
-                <th>Nama Warga</th>
-                <th>Bulan</th>
-                <th>Tahun</th>
-                <th>Tagihan</th>
-                <th>Total Bayar</th>
-                <th>Sisa</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            <% tagihan.forEach(item => { %>
-
-            <tr>
-
-                <td><%= item.id_tagihan %></td>
-
-                <td><%= item.nama %></td>
-
-                <td><%= item.bulan %></td>
-
-                <td><%= item.tahun %></td>
-
-                <td>
-                    Rp <%= Number(item.jumlah_tagihan).toLocaleString('id-ID') %>
-                </td>
-                <td>
-                    Rp <%= Number(item.total_bayar).toLocaleString('id-ID') %>
-                </td>
-                <td>
-                    Rp <%= Number(item.jumlah_tagihan - item.total_bayar).toLocaleString('id-ID') %>
-                </td>
+<%- include('../layout/sidebar') %>
 
 
-                <td>
 
-                    <% if(item.status === 'Lunas'){ %>
 
-                        <span class="badge bg-success">
-                            Lunas
-                        </span>
+    <section class="content">
 
-                    <% } else { %>
+        <div class="container-fluid mt-4">
 
-                        <span class="badge bg-danger">
-                            Belum Lunas
-                        </span>
+            <div class="d-flex justify-content-between align-items-center mb-3">
 
-                    <% } %>
+                <h2>Data Tagihan</h2>
 
-                </td>
+                <a
+                    href="/tagihan/tambah"
+                    class="btn btn-primary">
 
-                <td>
+                    <i class="fas fa-plus"></i>
+                    Tambah Tagihan
 
-                    <a
-                        href="/tagihan/hapus/<%= item.id_tagihan %>"
-                        class="btn btn-danger btn-sm"
-                        onclick="return confirm('Yakin?')">
+                </a>
 
-                        Hapus
+            </div>
 
-                    </a>
 
-                </td>
+            <div class="card">
 
-            </tr>
+                <div class="card-header">
 
-            <% }) %>
+                    <h3 class="card-title">
+                        Daftar Tagihan Warga
+                    </h3>
 
-        </tbody>
+                </div>
 
-    </table>
 
-</div>
+                <div class="card-body">
 
-</body>
-</html>
+                    <table class="table table-bordered table-striped">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>Nama Warga</th>
+                                <th>Bulan</th>
+                                <th>Tahun</th>
+                                <th>Tagihan</th>
+                                <th>Total Bayar</th>
+                                <th>Sisa</th>
+                                <th>Status</th>
+                                <th width="100">Aksi</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            <% if(tagihan.length === 0){ %>
+
+                                <tr>
+
+                                    <td colspan="9" class="text-center">
+
+                                        Belum ada data tagihan
+
+                                    </td>
+
+                                </tr>
+
+                            <% } %>
+
+
+                            <% tagihan.forEach(item => { %>
+
+                            <tr>
+
+                                <td>
+                                    <%= item.id_tagihan %>
+                                </td>
+
+                                <td>
+                                    <%= item.nama %>
+                                </td>
+
+                                <td>
+                                    <%= item.bulan %>
+                                </td>
+
+                                <td>
+                                    <%= item.tahun %>
+                                </td>
+
+                                <td>
+
+                                    Rp
+                                    <%= Number(item.jumlah_tagihan).toLocaleString('id-ID') %>
+
+                                </td>
+
+                                <td>
+
+                                    Rp
+                                    <%= Number(item.total_bayar).toLocaleString('id-ID') %>
+
+                                </td>
+
+                                <td>
+
+                                    Rp
+                                    <%= Number(item.jumlah_tagihan - item.total_bayar).toLocaleString('id-ID') %>
+
+                                </td>
+
+
+                                <td>
+
+                                    <% if(item.status === 'Lunas'){ %>
+
+                                        <span class="badge bg-success">
+
+                                            Lunas
+
+                                        </span>
+
+                                    <% } else { %>
+
+                                        <span class="badge bg-danger">
+
+                                            Belum Lunas
+
+                                        </span>
+
+                                    <% } %>
+
+                                </td>
+
+
+                                <td>
+
+                                    <a
+                                        href="/tagihan/hapus/<%= item.id_tagihan %>"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Yakin ingin menghapus data ini?')">
+
+                                        <i class="fas fa-trash"></i>
+                                        Hapus
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                            <% }) %>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+<%- include('../layout/footer') %>
